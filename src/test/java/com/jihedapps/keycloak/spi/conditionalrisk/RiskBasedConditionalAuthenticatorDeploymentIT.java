@@ -51,7 +51,7 @@ class RiskBasedConditionalAuthenticatorDeploymentIT {
                     .withStartupTimeout(Duration.ofMinutes(3)));
 
     private static String builtJarPath() {
-        String version = "0.1.0";
+        String version = "0.2.0";
         File jar = new File("target/keycloak-spi-workbench-" + version + ".jar");
         if (!jar.exists()) {
             throw new IllegalStateException(
