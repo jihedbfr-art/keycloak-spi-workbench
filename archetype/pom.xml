@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.jihedapps.keycloak</groupId>
+    <artifactId>keycloak-spi-authenticator-archetype</artifactId>
+    <version>1.0.0</version>
+    <packaging>maven-archetype</packaging>
+
+    <name>keycloak-spi-authenticator-archetype</name>
+    <description>
+        Scaffolds a new Keycloak Authenticator SPI module in the shape used across
+        keycloak-spi-workbench: an Authenticator + AuthenticatorFactory pair, the
+        META-INF/services registration, a unit test against mocked Keycloak model objects, and a
+        Testcontainers deployment IT that boots a real Keycloak server with the built jar and
+        confirms the provider actually registers. Standalone build, not part of the parent jar's
+        reactor.
+    </description>
+    <url>https://github.com/jihedbfr-art/keycloak-spi-workbench</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Jihed Ben Arfa</name>
+            <email>jihedbenarfa2026@gmail.com</email>
+            <url>https://github.com/jihedbfr-art</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/jihedbfr-art/keycloak-spi-workbench</url>
+        <connection>scm:git:https://github.com/jihedbfr-art/keycloak-spi-workbench.git</connection>
+        <developerConnection>scm:git:https://github.com/jihedbfr-art/keycloak-spi-workbench.git</developerConnection>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.archetype</groupId>
+                <artifactId>archetype-packaging</artifactId>
+                <version>3.2.1</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-archetype-plugin</artifactId>
+                <version>3.2.1</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
