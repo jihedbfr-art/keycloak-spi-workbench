@@ -6,16 +6,17 @@
 
     <groupId>com.jihedapps</groupId>
     <artifactId>keycloak-spi-workbench</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <packaging>jar</packaging>
 
     <name>keycloak-spi-workbench</name>
     <description>
         Custom Keycloak SPI providers: a conditional authenticator that gates a login-flow step
-        on business rules (client risk tier, per-user override) instead of a fixed yes/no, and an
-        event listener that publishes login/logout/login-error events to Kafka. Each provider
-        ships with real tests, including Testcontainers checks against a live Keycloak server and
-        a live Kafka broker, not just mocks.
+        on business rules (client risk tier, per-user override) instead of a fixed yes/no, an
+        event listener that publishes login/logout/login-error events to Kafka, and a read-only
+        user storage provider federating an existing legacy JDBC user table. Each provider ships
+        with real tests, including Testcontainers checks against a live Keycloak server, a live
+        Kafka broker, and a live PostgreSQL database, not just mocks.
     </description>
     <url>https://github.com/jihedbfr-art/keycloak-spi-workbench</url>
 
@@ -134,6 +135,24 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
             <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
