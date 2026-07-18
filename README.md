@@ -106,9 +106,19 @@ consumer; one re-runs the legacy-storage queries against a real PostgreSQL conta
 dialect doesn't always match Postgres exactly (case-insensitive `LIKE` and boolean columns being
 the two that actually differ in practice).
 
+## Scaffolding a new provider
+
+The [`archetype/`](archetype) directory has a Maven archetype that generates a new `Authenticator`
+SPI module in this same shape — placeholder authenticator + factory, `META-INF/services`
+registration, a unit test, and a Testcontainers deployment IT — instead of copying one of the
+three providers above by hand and renaming things. See [archetype/README.md](archetype/README.md)
+for the generate command. It's a standalone build, not part of this project's own `mvn` reactor.
+
 ## Roadmap
 
-- v1.0 — Maven archetype for scaffolding a new tested SPI module
+- Archetype coverage for the event-listener and user-storage provider shapes, if the authenticator
+  one earns its keep
+- Configurable column names for `legacy-user-storage` (currently fixed, see Install above)
 
 ## License
 
