@@ -3,6 +3,7 @@ target/
 *.class
 *.jar
 !**/maven-wrapper.jar
+dependency-reduced-pom.xml
 
 # IDE
 .idea/
