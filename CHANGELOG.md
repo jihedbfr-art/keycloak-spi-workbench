@@ -1,5 +1,19 @@
 # Changelog
 
+## archetype/ 1.0.0 — 2026-07-18
+
+Maven archetype (`keycloak-spi-authenticator-archetype`), standalone build under `archetype/`,
+not part of this project's own version line above.
+
+- Generates a new `Authenticator`/`AuthenticatorFactory` pair, `META-INF/services` registration, a
+  unit test against mocked Keycloak model objects, and a Testcontainers deployment IT — the same
+  shape as `conditional-risk-based`, minus the shading (a plain authenticator has no third-party
+  runtime dependency to bundle).
+- Self-tested: `mvn install` on the archetype generates a sample project and runs `mvn package`
+  against it, so a broken template fails here instead of shipping silently.
+- Only covers the Authenticator SPI shape for now — event-listener and user-storage have different
+  enough lifecycles to warrant their own template later.
+
 ## 0.3.0 — 2026-07-18
 
 Third provider: `legacy-user-storage`.
