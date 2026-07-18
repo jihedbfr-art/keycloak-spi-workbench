@@ -36,6 +36,21 @@ a login — the producer fails fast (`max.block.ms=2000`) and a failed send is l
 The jar is shaded — `kafka-clients` and `jackson-databind` are bundled in, since Keycloak's
 `providers/` directory doesn't resolve dependencies for you.
 
+## What's here: a legacy user storage provider
+
+`legacy-user-storage` federates users read-only from an existing JDBC table instead of forcing a
+big-bang migration into Keycloak's own store. This is the shape a real migration usually needs:
+the legacy system (a BSS subscriber table, an old CRM, whatever) stays the source of truth for
+accounts that already exist, new accounts go straight into Keycloak, and nobody has to write
+sync logic in both directions. Supports lookup by username/email/id, admin-console search, and
+password validation against the legacy hash — read-only, no writes ever go back to the legacy
+table. Table and column names are configurable; the hash algorithm is pluggable via
+`LegacyPasswordHasher` (the default, SHA-256 of salt+password, is a placeholder — swap it for
+whatever your actual legacy system used before pointing this at real data).
+
+Plain JDBC, no ORM, no connection pool — the connection supplier is the seam where a real
+deployment would plug in a pooled `DataSource` instead.
+
 ## Install
 
 Build the provider jar and drop it into Keycloak's `providers/` directory:
@@ -44,7 +59,13 @@ Build the provider jar and drop it into Keycloak's `providers/` directory:
 git clone https://github.com/jihedbfr-art/keycloak-spi-workbench.git
 cd keycloak-spi-workbench
 mvn clean package
-cp target/keycloak-spi-workbench-0.2.0.jar $KEYCLOAK_HOME/providers/
+cp target/keycloak-spi-workbench-0.3.0.jar $KEYCLOAK_HOME/providers/
+```
+
+You'll also need the JDBC driver for your legacy database (e.g. `postgresql-42.7.3.jar`) sitting
+in `providers/` alongside it, then:
+
+```bash
 $KEYCLOAK_HOME/bin/kc.sh build
 ```
 
@@ -61,25 +82,32 @@ $KEYCLOAK_HOME/bin/kc.sh start-dev \
   --spi-events-listener-kafka-event-publisher-topic=auth-events
 ```
 
+For the legacy user storage provider: Realm settings → User federation → Add provider →
+`legacy-user-storage`, then set the JDBC URL, username, password, and table name. The table is
+expected to have columns `id`, `username`, `email`, `first_name`, `last_name`, `password_hash`,
+`password_salt`, `enabled` (fixed for now — configurable column names are a natural v0.4).
+
 ## Testing
 
 ```bash
-mvn test              # unit tests — no Keycloak server or Kafka broker involved
-mvn verify             # also runs the Testcontainers checks against real Keycloak and real Kafka
+mvn test              # unit tests — no Docker required
+mvn verify             # also runs the Testcontainers checks: real Keycloak, real Kafka, real Postgres
 ```
 
 `RiskBasedConditionalAuthenticatorTest` covers the four-step evaluation order directly with
 mocked Keycloak model objects. `KafkaEventListenerProviderTest` / `...FactoryTest` cover event
-filtering, JSON payload shape, and config parsing. Two integration tests run at the `verify`
-phase: one boots a real `quay.io/keycloak/keycloak` container with the built jar deployed and
-confirms the conditional authenticator registers via the admin REST API; the other spins up a
-real Kafka broker, calls the event listener with a real `KafkaProducer`, and reads the message
-back with a real consumer — proving the producer config (serializers, acks) is actually right,
-not just that the mocked call happened.
+filtering, JSON payload shape, and config parsing. `LegacyUserRepositoryTest` runs real SQL
+against an in-memory H2 database (fast, no Docker) and `LegacyUserStorageProviderTest` covers the
+credential-validation and search-delegation logic with a faked repository. Three integration
+tests run at the `verify` phase: one boots a real `quay.io/keycloak/keycloak` container with the
+built jar deployed and confirms the conditional authenticator registers via the admin REST API;
+one spins up a real Kafka broker and proves a message round-trips through a real producer and
+consumer; one re-runs the legacy-storage queries against a real PostgreSQL container, since H2's
+dialect doesn't always match Postgres exactly (case-insensitive `LIKE` and boolean columns being
+the two that actually differ in practice).
 
 ## Roadmap
 
-- v0.3 — user storage SPI federating against a legacy user table
 - v1.0 — Maven archetype for scaffolding a new tested SPI module
 
 ## License

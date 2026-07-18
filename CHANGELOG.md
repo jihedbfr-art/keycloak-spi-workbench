@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.0 — 2026-07-18
+
+Third provider: `legacy-user-storage`.
+
+- `LegacyUserStorageProvider` / `Factory`: read-only `UserStorageProvider` federating an existing
+  JDBC table — lookup by username/email/id, admin-console search, password validation against a
+  pluggable legacy hash (`LegacyPasswordHasher`, default SHA-256 salted). No writes ever go back
+  to the legacy table.
+- Plain JDBC (`LegacyUserRepository`), no ORM or pool — a connection-supplier seam for plugging in
+  a pooled `DataSource` in a real deployment.
+- Unit tests: `LegacyUserRepositoryTest` runs real SQL against in-memory H2 (no Docker),
+  `LegacyUserStorageProviderTest` covers credential validation and search delegation against a
+  faked repository, plus hasher and table-identifier-validation tests.
+- Testcontainers integration test against real PostgreSQL, re-running the repository queries to
+  catch dialect differences H2 doesn't surface.
+
 ## 0.2.0 — 2026-07-18
 
 Second provider: `kafka-event-publisher`.
