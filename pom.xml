@@ -6,15 +6,16 @@
 
     <groupId>com.jihedapps</groupId>
     <artifactId>keycloak-spi-workbench</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <name>keycloak-spi-workbench</name>
     <description>
-        Custom Keycloak SPI providers, starting with a conditional authenticator that gates a
-        step in the login flow on business rules (client risk tier, per-user override) instead
-        of a fixed yes/no. Each provider ships with real tests, including a Testcontainers check
-        that the built jar actually deploys and registers on a live Keycloak server.
+        Custom Keycloak SPI providers: a conditional authenticator that gates a login-flow step
+        on business rules (client risk tier, per-user override) instead of a fixed yes/no, and an
+        event listener that publishes login/logout/login-error events to Kafka. Each provider
+        ships with real tests, including Testcontainers checks against a live Keycloak server and
+        a live Kafka broker, not just mocks.
     </description>
     <url>https://github.com/jihedbfr-art/keycloak-spi-workbench</url>
 
@@ -46,6 +47,8 @@
         <keycloak.version>26.6.1</keycloak.version>
         <junit.version>5.10.2</junit.version>
         <testcontainers.version>1.20.1</testcontainers.version>
+        <kafka-clients.version>4.3.1</kafka-clients.version>
+        <jackson.version>2.17.1</jackson.version>
     </properties>
 
     <dependencies>
@@ -80,6 +83,22 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--
+            Real runtime dependencies for the Kafka event listener, unlike the Keycloak artifacts
+            above. Keycloak's providers/ directory doesn't do dependency resolution — a provider
+            jar with third-party deps needs to bundle them, hence the shade plugin below.
+        -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka-clients.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
         <!-- test -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -112,9 +131,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.17.1</version>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -143,6 +162,37 @@
                             <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!--
+                    Bundles kafka-clients + jackson-databind (and their transitive deps) into
+                    the provider jar so a single `cp target/*.jar providers/` is enough — Keycloak
+                    doesn't resolve dependencies for provider jars itself. keycloak-* artifacts
+                    stay out of the shaded jar because they're `provided` scope.
+                -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
