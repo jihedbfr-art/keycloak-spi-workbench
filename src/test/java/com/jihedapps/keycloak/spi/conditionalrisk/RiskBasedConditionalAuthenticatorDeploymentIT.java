@@ -43,7 +43,11 @@ class RiskBasedConditionalAuthenticatorDeploymentIT {
             .withEnv("KEYCLOAK_ADMIN_PASSWORD", "admin")
             .withExposedPorts(8080)
             .withCommand("start-dev")
-            .waitingFor(Wait.forLogMessage(".*Running the server in development mode.*\\n", 1)
+            // the "development mode" log line prints before the HTTP listener actually accepts
+            // connections — polling the real endpoint is the only wait condition that doesn't
+            // race the server's own startup
+            .waitingFor(Wait.forHttp("/realms/master")
+                    .forStatusCode(200)
                     .withStartupTimeout(Duration.ofMinutes(3)));
 
     private static String builtJarPath() {
