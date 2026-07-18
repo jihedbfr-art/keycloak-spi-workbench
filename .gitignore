@@ -1,0 +1,27 @@
+# Java / Maven
+target/
+*.class
+*.jar
+!**/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets & env
+.env
+*.local
+*.pem
+*.key
+
+# Assistant working files — never public
+CLAUDE.md
+.claude/
