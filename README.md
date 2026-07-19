@@ -49,7 +49,9 @@ table. Table and column names are configurable; the hash algorithm is pluggable 
 whatever your actual legacy system used before pointing this at real data).
 
 Plain JDBC, no ORM, no connection pool — the connection supplier is the seam where a real
-deployment would plug in a pooled `DataSource` instead.
+deployment would plug in a pooled `DataSource` instead. Optional Sentry error and performance
+monitoring: set `SENTRY_DSN` and every JDBC call gets a span, `SQLException`s get reported. No
+DSN, no Sentry — nothing changes.
 
 ## Install
 
@@ -59,7 +61,7 @@ Build the provider jar and drop it into Keycloak's `providers/` directory:
 git clone https://github.com/jihedbfr-art/keycloak-spi-workbench.git
 cd keycloak-spi-workbench
 mvn clean package
-cp target/keycloak-spi-workbench-0.3.0.jar $KEYCLOAK_HOME/providers/
+cp target/keycloak-spi-workbench-0.4.0.jar $KEYCLOAK_HOME/providers/
 ```
 
 You'll also need the JDBC driver for your legacy database (e.g. `postgresql-42.7.3.jar`) sitting
