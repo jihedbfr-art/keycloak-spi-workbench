@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 — 2026-07-19
+
+- Fixed a duplicate-lookup bug in `LegacyUserStorageProvider#searchForUserByUserAttributeStream`:
+  it called `getUserByUsername` twice per invocation (once for the null check, once to build the
+  result), so every username-attribute search did two JDBC round trips against a repository with
+  no connection pooling. Now calls it once. Regression test added.
+- Added optional Sentry integration (`io.sentry:sentry`), off by default. Set `SENTRY_DSN` to
+  enable: `LegacyUserRepository` reports a performance span per JDBC call (`legacy_db.find_one`,
+  `legacy_db.search`) and captures `SQLException`s. No DSN means no Sentry.init call and the spans
+  are no-ops — existing deployments are unaffected unless they opt in.
+
 ## archetype/ 1.0.0 — 2026-07-18
 
 Maven archetype (`keycloak-spi-authenticator-archetype`), standalone build under `archetype/`,
