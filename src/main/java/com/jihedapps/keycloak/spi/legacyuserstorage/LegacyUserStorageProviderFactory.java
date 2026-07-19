@@ -1,5 +1,7 @@
 package com.jihedapps.keycloak.spi.legacyuserstorage;
 
+import io.sentry.Sentry;
+import org.keycloak.Config;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -18,6 +20,23 @@ public class LegacyUserStorageProviderFactory implements UserStorageProviderFact
     static final String CFG_JDBC_USERNAME = "jdbcUsername";
     static final String CFG_JDBC_PASSWORD = "jdbcPassword";
     static final String CFG_TABLE_NAME = "tableName";
+
+    /**
+     * Opt-in: no SENTRY_DSN env var means Sentry.init is never called, so LegacyUserRepository's
+     * spans fall back to NoOpSpan and captureException calls are silent no-ops. Deployments that
+     * don't want this provider talking to Sentry at all just don't set the variable.
+     */
+    @Override
+    public void init(Config.Scope config) {
+        String dsn = System.getenv("SENTRY_DSN");
+        if (dsn != null && !dsn.isBlank() && !Sentry.isEnabled()) {
+            Sentry.init(options -> {
+                options.setDsn(dsn);
+                options.setTracesSampleRate(1.0);
+                options.setEnvironment(System.getenv().getOrDefault("SENTRY_ENVIRONMENT", "production"));
+            });
+        }
+    }
 
     @Override
     public LegacyUserStorageProvider create(KeycloakSession session, ComponentModel model) {
