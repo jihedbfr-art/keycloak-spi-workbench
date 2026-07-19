@@ -51,15 +51,24 @@ class RiskBasedConditionalAuthenticatorDeploymentIT {
                     .withStartupTimeout(Duration.ofMinutes(3)));
 
     private static String builtJarPath() {
-        String version = "0.3.0";
-        File jar = new File("target/keycloak-spi-workbench-" + version + ".jar");
-        if (!jar.exists()) {
+        // Matched by pattern instead of a hardcoded version — the previous version made this test
+        // silently break on every version bump (it already happened once going 0.2.0 -> 0.3.0).
+        File targetDir = new File("target");
+        File[] candidates = targetDir.listFiles((dir, name) ->
+                name.matches("^keycloak-spi-workbench-\\d.*\\.jar$"));
+        if (candidates == null || candidates.length == 0) {
             throw new IllegalStateException(
-                    "Built jar not found at " + jar.getAbsolutePath()
+                    "Built jar not found under " + targetDir.getAbsolutePath()
                             + " — this test needs `mvn package` (or `verify`) to have run first, "
                             + "not a bare `mvn test`.");
         }
-        return jar.getAbsolutePath();
+        if (candidates.length > 1) {
+            throw new IllegalStateException(
+                    "Expected exactly one built jar under " + targetDir.getAbsolutePath()
+                            + " but found " + candidates.length + ": " + java.util.Arrays.toString(candidates)
+                            + " — run `mvn clean package` to remove stale artifacts from a previous version.");
+        }
+        return candidates[0].getAbsolutePath();
     }
 
     @Test
