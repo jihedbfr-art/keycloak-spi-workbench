@@ -6,7 +6,7 @@
 
     <groupId>com.jihedapps</groupId>
     <artifactId>keycloak-spi-workbench</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
     <packaging>jar</packaging>
 
     <name>keycloak-spi-workbench</name>
@@ -50,6 +50,7 @@
         <testcontainers.version>1.20.1</testcontainers.version>
         <kafka-clients.version>4.3.1</kafka-clients.version>
         <jackson.version>2.17.1</jackson.version>
+        <sentry.version>7.14.0</sentry.version>
     </properties>
 
     <dependencies>
@@ -98,6 +99,16 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+        <!--
+            Error + performance monitoring for the legacy user storage provider. Only activates
+            if SENTRY_DSN is set (see LegacyUserStorageProviderFactory#init) — no DSN means no
+            network calls, so this is a no-op in plain unit-test runs and local dev.
+        -->
+        <dependency>
+            <groupId>io.sentry</groupId>
+            <artifactId>sentry</artifactId>
+            <version>${sentry.version}</version>
         </dependency>
 
         <!-- test -->
