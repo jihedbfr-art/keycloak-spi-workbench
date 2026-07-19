@@ -1,5 +1,10 @@
 package com.jihedapps.keycloak.spi.legacyuserstorage;
 
+import io.sentry.ISpan;
+import io.sentry.NoOpSpan;
+import io.sentry.Sentry;
+import io.sentry.SpanStatus;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,19 +44,25 @@ public class LegacyUserRepository {
     }
 
     private Optional<LegacyUser> findOneWhere(String column, String value) {
+        ISpan span = startSpan("legacy_db.find_one", "SELECT by " + column);
         String sql = "SELECT * FROM " + table.tableName() + " WHERE LOWER(" + column + ") = LOWER(?)";
         try (Connection conn = connectionSupplier.get();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, value);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+                Optional<LegacyUser> result = rs.next() ? Optional.of(mapRow(rs)) : Optional.empty();
+                span.finish(SpanStatus.OK);
+                return result;
             }
         } catch (SQLException e) {
+            span.finish(SpanStatus.INTERNAL_ERROR);
+            Sentry.captureException(e);
             throw new LegacyUserStorageException("failed to look up user by " + column, e);
         }
     }
 
     public List<LegacyUser> search(String term, Integer firstResult, Integer maxResults) {
+        ISpan span = startSpan("legacy_db.search", "search legacy users");
         String sql = "SELECT * FROM " + table.tableName() + " WHERE "
                 + "LOWER(" + table.usernameColumn() + ") LIKE LOWER(?) OR "
                 + "LOWER(" + table.emailColumn() + ") LIKE LOWER(?) OR "
@@ -79,8 +90,12 @@ public class LegacyUserRepository {
                     results.add(mapRow(rs));
                 }
             }
+            span.setData("result_count", results.size());
+            span.finish(SpanStatus.OK);
             return results;
         } catch (SQLException e) {
+            span.finish(SpanStatus.INTERNAL_ERROR);
+            Sentry.captureException(e);
             throw new LegacyUserStorageException("failed to search legacy users", e);
         }
     }
@@ -92,8 +107,20 @@ public class LegacyUserRepository {
              ResultSet rs = stmt.executeQuery()) {
             return rs.next() ? rs.getInt(1) : 0;
         } catch (SQLException e) {
+            Sentry.captureException(e);
             throw new LegacyUserStorageException("failed to count legacy users", e);
         }
+    }
+
+    /**
+     * Child span of whatever transaction Keycloak's request-tracing filter has open, or a no-op
+     * {@code NoOpSpan} if Sentry isn't initialized (see LegacyUserStorageProviderFactory#init) or
+     * no transaction is active — either way this never throws and never touches the network
+     * on its own.
+     */
+    private ISpan startSpan(String operation, String description) {
+        ISpan parent = Sentry.getSpan();
+        return parent != null ? parent.startChild(operation, description) : NoOpSpan.getInstance();
     }
 
     LegacyUser mapRow(ResultSet rs) throws SQLException {
