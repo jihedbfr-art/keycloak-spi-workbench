@@ -100,6 +100,15 @@ class LegacyUserStorageProviderTest {
     }
 
     @Test
+    void searchForUserByUserAttributeStreamHitsTheRepositoryOnlyOnce() {
+        when(repository.findByUsername("jsmith")).thenReturn(Optional.of(ACTIVE_USER));
+
+        provider.searchForUserByUserAttributeStream(realm, UserModel.USERNAME, "jsmith").toList();
+
+        org.mockito.Mockito.verify(repository, org.mockito.Mockito.times(1)).findByUsername("jsmith");
+    }
+
+    @Test
     void searchDelegatesTheSearchTermFromParams() {
         when(repository.search("maria", 0, 10)).thenReturn(java.util.List.of());
 

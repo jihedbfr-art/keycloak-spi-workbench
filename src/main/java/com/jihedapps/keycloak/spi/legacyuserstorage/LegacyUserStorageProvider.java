@@ -84,9 +84,8 @@ public class LegacyUserStorageProvider implements UserStorageProvider,
     @Override
     public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realm, String attrName, String attrValue) {
         if (UserModel.USERNAME.equals(attrName)) {
-            return getUserByUsername(realm, attrValue) != null
-                    ? Stream.of(getUserByUsername(realm, attrValue))
-                    : Stream.empty();
+            UserModel user = getUserByUsername(realm, attrValue);
+            return user != null ? Stream.of(user) : Stream.empty();
         }
         return Stream.empty();
     }
