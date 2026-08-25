@@ -7,6 +7,10 @@ SPI examples stop at "here's a class that implements the interface" — the actu
 proving the thing deploys cleanly on a real server and behaves correctly once it's there, and
 that part is usually missing.
 
+**Try it in one command:** `mvn clean verify` builds every provider and runs the Testcontainers
+suite — a real Keycloak, a real Kafka broker, a real Postgres — proving each one actually deploys
+and behaves, not just compiles. No setup beyond Docker.
+
 ## What's here: a risk-based conditional authenticator
 
 `conditional-risk-based` gates a step in the login flow (typically OTP) on a business rule
