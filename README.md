@@ -2,10 +2,16 @@
 
 [![CI](https://github.com/jihedbfr-art/keycloak-spi-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/jihedbfr-art/keycloak-spi-workbench/actions)
 
+[Version française](./README.fr.md)
+
 Custom Keycloak SPI providers, built one at a time, each with real tests. Most public Keycloak
 SPI examples stop at "here's a class that implements the interface" — the actual hard part is
 proving the thing deploys cleanly on a real server and behaves correctly once it's there, and
 that part is usually missing.
+
+**Try it in one command:** `mvn clean verify` builds every provider and runs the Testcontainers
+suite — a real Keycloak, a real Kafka broker, a real Postgres — proving each one actually deploys
+and behaves, not just compiles. No setup beyond Docker.
 
 ## What's here: a risk-based conditional authenticator
 
