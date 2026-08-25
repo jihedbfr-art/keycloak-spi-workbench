@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/jihedbfr-art/keycloak-spi-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/jihedbfr-art/keycloak-spi-workbench/actions)
 
+[Version française](./README.fr.md)
+
 Custom Keycloak SPI providers, built one at a time, each with real tests. Most public Keycloak
 SPI examples stop at "here's a class that implements the interface" — the actual hard part is
 proving the thing deploys cleanly on a real server and behaves correctly once it's there, and
