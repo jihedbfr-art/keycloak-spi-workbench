@@ -23,7 +23,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <keycloak.version>${keycloakVersion}</keycloak.version>
         <junit.version>5.10.2</junit.version>
-        <testcontainers.version>1.20.1</testcontainers.version>
+        <testcontainers.version>1.21.3</testcontainers.version>
         <jackson.version>2.18.9</jackson.version>
     </properties>
 
@@ -123,6 +123,20 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <!-- Testcontainers/docker-java fall back to a hardcoded, ancient API
+                         version (1.32) whenever they can't auto-detect one from the
+                         environment. Recent Docker Engine daemons (29.x, as shipped by current
+                         Docker Desktop) reject that version outright with HTTP 400, which
+                         otherwise surfaces as a misleading "Could not find a valid Docker
+                         environment" error that looks like Docker itself is unreachable. Pinning
+                         a modern version here is what actually fixes it; it is a system property
+                         (api.version), not the DOCKER_API_VERSION environment variable that
+                         docker-java's config loader does not read. -->
+                    <systemPropertyVariables>
+                        <api.version>1.44</api.version>
+                    </systemPropertyVariables>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
